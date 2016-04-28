@@ -6,13 +6,10 @@ package com.example.guest.movieapp;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-import com.example.guest.movieapp.Actor;
 
 import org.parceler.Parcels;
 
@@ -24,13 +21,13 @@ import butterknife.ButterKnife;
 /**
  * Created by Guest on 4/27/16.
  */
-public class ActorListAdapter extends RecyclerView.Adapter<ActorListAdapter.ActorViewHolder> {
+public class MovieActorsListAdapter extends RecyclerView.Adapter<MovieActorsListAdapter.ActorViewHolder> {
     private Context mContext;
     private ArrayList<Actor> mActors = new ArrayList<>();
     int score;
     String degrees;
 
-    public ActorListAdapter(Context context, ArrayList<Actor> actors, int activityScore, String activityDegrees) {
+    public MovieActorsListAdapter(Context context, ArrayList<Actor> actors, int activityScore, String activityDegrees) {
         mContext = context;
         mActors = actors;
         score = activityScore;
@@ -38,14 +35,14 @@ public class ActorListAdapter extends RecyclerView.Adapter<ActorListAdapter.Acto
     }
 
     @Override
-    public ActorListAdapter.ActorViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.actor_list_item, parent, false);
+    public MovieActorsListAdapter.ActorViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.movie_actors_list_item, parent, false);
         ActorViewHolder viewHolder = new ActorViewHolder(view);
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(ActorListAdapter.ActorViewHolder holder, int position) {
+    public void onBindViewHolder(MovieActorsListAdapter.ActorViewHolder holder, int position) {
         holder.bindActor(mActors.get(position));
     }
 
@@ -76,7 +73,7 @@ public class ActorListAdapter extends RecyclerView.Adapter<ActorListAdapter.Acto
                         mContext.startActivity(intent);
                     } else {
                         degrees += actor.getName() + ", who was in ";
-                        Intent intent = new Intent(mContext, MovieListActivity.class);
+                        Intent intent = new Intent(mContext, ActorMoviesListActivity.class);
                         intent.putExtra("actor", Parcels.wrap(actor));
                         intent.putExtra("score", score);
                         intent.putExtra("degrees", degrees);

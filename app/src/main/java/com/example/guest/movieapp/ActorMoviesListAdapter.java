@@ -3,7 +3,6 @@ package com.example.guest.movieapp;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,13 +18,13 @@ import butterknife.ButterKnife;
 /**
  * Created by Guest on 4/27/16.
  */
-public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.MovieViewHolder> {
+public class ActorMoviesListAdapter extends RecyclerView.Adapter<ActorMoviesListAdapter.MovieViewHolder> {
     private Context mContext;
     private ArrayList<Movie> mMovies = new ArrayList<>();
     int score;
     String degrees;
 
-    public MovieListAdapter(Context context, ArrayList<Movie> movies, int activityScore, String activityDegrees) {
+    public ActorMoviesListAdapter(Context context, ArrayList<Movie> movies, int activityScore, String activityDegrees) {
         mContext = context;
         mMovies = movies;
         score = activityScore;
@@ -33,14 +32,14 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Movi
     }
 
     @Override
-    public MovieListAdapter.MovieViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.movie_list_item, parent, false);
+    public ActorMoviesListAdapter.MovieViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.actor_movies_list_item, parent, false);
         MovieViewHolder viewHolder = new MovieViewHolder(view);
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(MovieListAdapter.MovieViewHolder holder, int position) {
+    public void onBindViewHolder(ActorMoviesListAdapter.MovieViewHolder holder, int position) {
         holder.bindMovie(mMovies.get(position));
     }
 
@@ -63,7 +62,7 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Movi
                     int itemPosition = getLayoutPosition();
                     Movie movie = mMovies.get(itemPosition);
                     degrees += movie.getTitle() + " with ";
-                    Intent intent = new Intent(mContext, ActorListActivity.class);
+                    Intent intent = new Intent(mContext, MovieActorsListActivity.class);
                     intent.putExtra("movie", Parcels.wrap(movie));
                     intent.putExtra("score", score);
                     intent.putExtra("degrees", degrees);

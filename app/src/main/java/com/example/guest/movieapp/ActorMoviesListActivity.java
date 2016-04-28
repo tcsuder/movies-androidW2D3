@@ -22,69 +22,66 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class ActorListActivity extends AppCompatActivity {
+public class ActorMoviesListActivity extends AppCompatActivity {
     private static final int MAX_WIDTH = 400;
     private static final int MAX_HEIGHT = 600;
 
-    @Bind(R.id.movieTitleTextView) TextView mMovieTitleTextView;
+    @Bind(R.id.actorTextView) TextView mActorTextView;
     @Bind(R.id.recyclerView) RecyclerView mRecyclerView;
-    @Bind(R.id.movieImageView) ImageView mMovieImageView;
-    private ActorListAdapter mAdapter;
-    private Movie movie;
+    @Bind(R.id.actorImageView) ImageView mActorImageView;
+    Context mContext;
+    private ActorMoviesListAdapter mAdapter;
+    private Actor actor;
     int score;
     String degrees;
-    Context mContext;
 
-    public ArrayList<Actor> mActors = new ArrayList<>();
-
+    public ArrayList<Movie> mMovies = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_actor_list);
+        setContentView(R.layout.activity_actor_movies_list);
         ButterKnife.bind(this);
 
         mContext = this;
         Intent intent = getIntent();
-        movie = Parcels.unwrap(intent.getParcelableExtra("movie"));
+        actor = Parcels.unwrap(intent.getParcelableExtra("actor"));
         score = intent.getIntExtra("score", 0);
         degrees = intent.getStringExtra("degrees");
-        String title = movie.getTitle();
+        mActorTextView.setText(actor.getName());
 
-        mMovieTitleTextView.setText(title);
 
-        getActors(movie.getMovieId());
+        getMovies(actor.getActorId());
     }
 
     @Override
     public void onBackPressed() {
     }
 
-    private void getActors(String id) {
-        final MovieDBService actorDBService = new MovieDBService();
+    private void getMovies(String id) {
+        final MovieDBService movieDBService = new MovieDBService();
 
-        actorDBService.findActors(id, new Callback() {
+        movieDBService.findMovies(id, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
             }
 
-
             @Override
             public void onResponse(Call call, Response response) {
-                mActors = actorDBService.processActorResults(response, "cast", mActors);
+                mMovies = movieDBService.processMovieResults(response);
 
-                ActorListActivity.this.runOnUiThread(new Runnable() {
+                ActorMoviesListActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Picasso.with(mContext)
-                                .load(movie.getPosterUrl())
+                                .load(actor.getImageUrl())
                                 .resize(MAX_WIDTH, MAX_HEIGHT)
                                 .centerCrop()
-                                .into(mMovieImageView);
-                        mAdapter = new ActorListAdapter(getApplicationContext(), mActors, score, degrees);
+                                .into(mActorImageView);
+                        mAdapter = new ActorMoviesListAdapter(getApplicationContext(), mMovies, score, degrees);
                         mRecyclerView.setAdapter(mAdapter);
-                        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(ActorListActivity.this);
+                        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(ActorMoviesListActivity.this);
                         mRecyclerView.setLayoutManager(layoutManager);
                         mRecyclerView.setHasFixedSize(true);
                     }
@@ -93,4 +90,5 @@ public class ActorListActivity extends AppCompatActivity {
         });
 
     }
+
 }
