@@ -1,12 +1,15 @@
 package com.example.guest.movieapp;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import org.parceler.Parcels;
 
@@ -19,10 +22,16 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class MovieListActivity extends AppCompatActivity {
+public class ActorMoviesListActivity extends AppCompatActivity {
+    private static final int MAX_WIDTH = 400;
+    private static final int MAX_HEIGHT = 600;
+
     @Bind(R.id.actorTextView) TextView mActorTextView;
     @Bind(R.id.recyclerView) RecyclerView mRecyclerView;
-    private MovieListAdapter mAdapter;
+    @Bind(R.id.actorImageView) ImageView mActorImageView;
+    Context mContext;
+    private ActorMoviesListAdapter mAdapter;
+    private Actor actor;
     int score;
     String degrees;
 
@@ -31,11 +40,12 @@ public class MovieListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_list);
+        setContentView(R.layout.activity_actor_movies_list);
         ButterKnife.bind(this);
 
+        mContext = this;
         Intent intent = getIntent();
-        Actor actor = Parcels.unwrap(intent.getParcelableExtra("actor"));
+        actor = Parcels.unwrap(intent.getParcelableExtra("actor"));
         score = intent.getIntExtra("score", 0);
         degrees = intent.getStringExtra("degrees");
         mActorTextView.setText(actor.getName());
@@ -61,12 +71,17 @@ public class MovieListActivity extends AppCompatActivity {
             public void onResponse(Call call, Response response) {
                 mMovies = movieDBService.processMovieResults(response);
 
-                MovieListActivity.this.runOnUiThread(new Runnable() {
+                ActorMoviesListActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mAdapter = new MovieListAdapter(getApplicationContext(), mMovies, score, degrees);
+                        Picasso.with(mContext)
+                                .load(actor.getImageUrl())
+                                .resize(MAX_WIDTH, MAX_HEIGHT)
+                                .centerCrop()
+                                .into(mActorImageView);
+                        mAdapter = new ActorMoviesListAdapter(getApplicationContext(), mMovies, score, degrees);
                         mRecyclerView.setAdapter(mAdapter);
-                        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(MovieListActivity.this);
+                        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(ActorMoviesListActivity.this);
                         mRecyclerView.setLayoutManager(layoutManager);
                         mRecyclerView.setHasFixedSize(true);
                     }

@@ -1,19 +1,14 @@
 package com.example.guest.movieapp;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
-
-import org.parceler.Parcels;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,21 +21,23 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class GameStartActivity extends AppCompatActivity implements View.OnClickListener {
+public class GameStartActivity extends AppCompatActivity {
     @Bind(R.id.actorTextView) TextView mActorNameTextView;
     @Bind(R.id.actorImageView) ImageView mActorImageView;
-    @Bind(R.id.moviesButton) Button mMoviesButton;
+    @Bind(R.id.recyclerView) RecyclerView mRecyclerView;
     int score = 0;
     String degrees = "";
     boolean callbackComplete = false;
 
     private static final int MAX_WIDTH = 400;
-    private static final int MAX_HEIGHT = 300;
+    private static final int MAX_HEIGHT = 600;
 
     public ArrayList<Actor> mFamousActors = new ArrayList<>();
+    public ArrayList<Movie> movies = new ArrayList<>();
     public Actor actor;
     Random random = new Random();
     private Context mContext;
+    private ActorMoviesListAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,8 +47,6 @@ public class GameStartActivity extends AppCompatActivity implements View.OnClick
         mContext = this;
 
         getActors();
-
-        mMoviesButton.setOnClickListener(this);
     }
 
     private void getActors() {
@@ -75,15 +70,14 @@ public class GameStartActivity extends AppCompatActivity implements View.OnClick
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
                         mFamousActors = movieDBService.processActorResults(response, "results", mFamousActors);
-                        Log.d("ACTORS", ""+mFamousActors.size());
 
-                        callbackComplete = true;
+//                        callbackComplete = true;
+                        int randomNumber = random.nextInt(mFamousActors.size());
+                        actor = mFamousActors.get(randomNumber);
 
                         GameStartActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                int randomNumber = random.nextInt(mFamousActors.size());
-                                actor = mFamousActors.get(randomNumber);
                                 mActorNameTextView.setText(actor.getName());
                                 degrees += actor.getName() + " was in ";
                                 Picasso.with(mContext)
@@ -93,29 +87,34 @@ public class GameStartActivity extends AppCompatActivity implements View.OnClick
                                         .into(mActorImageView);
                             }
                         });
+                        movieDBService.findMovies(actor.getActorId(), new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                e.printStackTrace();
+                            }
+
+                            @Override
+                            public void onResponse(Call call, Response response) {
+                                movies = movieDBService.processMovieResults(response);
+                                GameStartActivity.this.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mAdapter = new ActorMoviesListAdapter(getApplicationContext(), movies, score, degrees);
+                                        mRecyclerView.setAdapter(mAdapter);
+                                        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(GameStartActivity.this);
+                                        mRecyclerView.setLayoutManager(layoutManager);
+                                        mRecyclerView.setHasFixedSize(true);
+                                    }
+                                });
+                            }
+
+
+                        });
                     }
                 });
 
             }
         });
 
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch(v.getId()) {
-            case R.id.moviesButton:
-                if (callbackComplete) {
-                    Intent intent = new Intent(GameStartActivity.this, MovieListActivity.class);
-                    intent.putExtra("score", score);
-                    intent.putExtra("actor", Parcels.wrap(actor));
-                    intent.putExtra("degrees", degrees);
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(GameStartActivity.this, "loading...", Toast.LENGTH_SHORT).show();
-                }
-
-                break;
-        }
     }
 }
